@@ -3,6 +3,43 @@ from pyglet.window import key
 import pymunk
 from pymunk import Vec2d
 
+class SpaceShip():
+    def __init__(self, space):
+        mass = 5;
+        radius = 24
+        inertia = pymunk.moment_for_box(mass, 0, radius)
+        body = pymunk.Body(mass, inertia)
+        x = random.randint(20,600)
+        y = random.randint(20,400)
+        body.position = x, y
+        shape = pymunk.Poly(body,
+                            [
+                              (0, 0),
+                              (radius, 0),
+                              (radius, radius),
+                              (0, radius)
+                            ]
+                          )
+        space.add(body, shape)
+        self.shape = shape
+        self.body = body
+    def draw_box(self, box):
+        coords = box.get_points()
+        r = random.random()
+        g = random.random()
+        pyglet.gl.glColor4f(1.0, 0.0, 0.0, 0.0)
+        pyglet.graphics.draw(4, pyglet.gl.GL_POLYGON,
+            ('v2i', (
+                int(round(coords[0].x)), int(round(coords[0].y)),
+                int(round(coords[1].x)), int(round(coords[1].y)),
+                int(round(coords[2].x)), int(round(coords[2].y)),
+                int(round(coords[3].x)), int(round(coords[3].y)),
+                ))
+        )
+    def draw(self):
+        self.draw_box(self.shape)
+
+
 class Window(pyglet.window.Window):
 
     def __init__(self, *args, **kwargs):
@@ -12,8 +49,8 @@ class Window(pyglet.window.Window):
         self.asteroids = []
         for n in range(1, 80):
             self.add_asteroid()
-        self.add_ship()
         self.lines = self.add_borders()
+        self.ship = SpaceShip(self.space)
 
     def init_physics(self):
         pymunk.init_pymunk()
@@ -56,25 +93,7 @@ class Window(pyglet.window.Window):
         self.space.add(body, shape)
         return shape
 
-    def add_ship(self):
-        mass = 5;
-        radius = 24
-        inertia = pymunk.moment_for_box(mass, 0, radius)
-        body = pymunk.Body(mass, inertia)
-        x = random.randint(20,600)
-        y = random.randint(20,400)
-        body.position = x, y
-        shape = pymunk.Poly(body,
-                            [
-                              (0, 0),
-                              (radius, 0),
-                              (radius, radius),
-                              (0, radius)
-                            ]
-                          )
-        self.space.add(body, shape)
-        self.ship = shape
-        self.ship_body = body
+
 
     def draw_box(self, box, ship=False):
         coords = box.get_points()
@@ -93,19 +112,16 @@ class Window(pyglet.window.Window):
                 ))
         )
 
-    def ship_body(self):
-        return self.space.bodies[len(self.space.bodies)-1]
-
     def update(self):
         speed = 90;
         if self.keys[key.UP]:
-            self.ship_body.apply_impulse((0,speed))
+            self.ship.body.apply_impulse((0,speed))
         elif self.keys[key.RIGHT]:
-            self.ship_body.apply_impulse((speed,0))
+            self.ship.body.apply_impulse((speed,0))
         elif self.keys[key.DOWN]:
-            self.ship_body.apply_impulse((0,-speed))
+            self.ship.body.apply_impulse((0,-speed))
         elif self.keys[key.LEFT]:
-            self.ship_body.apply_impulse((-speed,0))
+            self.ship.body.apply_impulse((-speed,0))
 
     def add_borders(self):
         body = pymunk.Body(pymunk.inf, pymunk.inf)
@@ -134,8 +150,8 @@ class Window(pyglet.window.Window):
     def draw(self):
         for asteroid in self.asteroids:
             self.draw_box(asteroid)
-        self.draw_box(self.ship, True)
         self.draw_lines(self.lines)
+        self.ship.draw()
 
 def to_pyglet(p):
     return Vec2d(round_to_int(p.x), round_to_int(p.y))
