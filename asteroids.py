@@ -126,7 +126,7 @@ class Window(pyglet.window.Window):
             pv2 = body.position + line.b.rotated(body.angle)
             p1 = to_pyglet(pv1) # 2
             p2 = to_pyglet(pv2)
-            pyglet.gl.glColor4f(1.0,0,0,1.0)
+            pyglet.gl.glColor4f(0.0,1.0,1.0,1.0)
             pyglet.graphics.draw(2, pyglet.gl.GL_LINES,
                 ('v2i', (int(p1.x), int(p1.y), int(p2.x), int(p2.y)))
             )
