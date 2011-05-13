@@ -15,12 +15,15 @@ class PymunkShape():
         """
         :param side: Длина стороны
         """
+        return PymunkShape.rectangle(body, side, side)
+    @staticmethod
+    def rectangle(body, width, height):
         shape = pymunk.Poly(body,
             [
               (0, 0),
-              (side, 0),
-              (side, side),
-              (0, side)
+              (width, 0),
+              (width, height),
+              (0, height)
             ]
         )
         return shape
@@ -30,7 +33,7 @@ class PygletDraw():
     Отрисовка примитивов в Pyglet
     """
     @staticmethod
-    def square(coords):
+    def tetragon(coords):
         """
         Четырехугольник
         :param coords: Четыре точки - координаты (Vec2d)
@@ -53,27 +56,41 @@ class PygletDraw():
         pyglet.graphics.draw(2, pyglet.gl.GL_LINES,
                              ('v2i', (int(p1.x), int(p1.y), int(p2.x), int(p2.y)))
                              )
+    @staticmethod
+    def point(coords):
+        x = int(coords.x)
+        y = int(coords.y)
+        pyglet.graphics.draw(2, pyglet.gl.GL_POINTS,
+                             ('v2i',
+                                 (x, y, x, y)
+                             ))
 
 
 class SpaceShip():
+    debug = True
     def __init__(self, space):
-        mass = 5;
+        mass = 20
         radius = 24
         inertia = pymunk.moment_for_box(mass, 0, radius)
         body = pymunk.Body(mass, inertia)
         x = random.randint(20,600)
         y = random.randint(20,400)
         body.position = x, y
-        shape = PymunkShape.square(body, radius)
+        shape = PymunkShape.rectangle(body, radius*5, radius)
         space.add(body, shape)
         self.shape = shape
         self.body = body
     def draw_box(self, box):
         coords = box.get_points()
         pyglet.gl.glColor4f(1.0, 0.0, 0.0, 0.0)
-        PygletDraw.square(coords)
+        PygletDraw.tetragon(coords)
     def draw(self):
         self.draw_box(self.shape)
+        pyglet.gl.glColor4f(1.0, 1.0, 0.0, 0.0)
+        vector = self.body.local_to_world((12,12))
+        offset = self.body.local_to_world(self.body.rotation_vector)
+        PygletDraw.line(vector, offset)
+        PygletDraw.point(vector)
 
 
 class Window(pyglet.window.Window):
@@ -83,8 +100,9 @@ class Window(pyglet.window.Window):
         self.init_physics()
         self.init_handlers()
         self.asteroids = []
-        for n in range(1, 80):
-            self.add_asteroid()
+        for n in range(1, 8):
+            pass
+            #self.add_asteroid()
         self.lines = self.add_borders()
         self.ship = SpaceShip(self.space)
 
@@ -127,18 +145,19 @@ class Window(pyglet.window.Window):
         r = random.random()
         g = random.random()
         pyglet.gl.glColor4f(r, g, 1.0, 1.0)
-        PygletDraw.square(coords)
+        PygletDraw.tetragon(coords)
 
     def update(self):
-        speed = 90;
+        speed = 1
+        offset = (0, 48)
         if self.keys[key.UP]:
-            self.ship.body.apply_impulse((0,speed))
+            self.ship.body.apply_impulse(self.ship.body.world_to_local((0, speed)), offset)
         elif self.keys[key.RIGHT]:
-            self.ship.body.apply_impulse((speed,0))
+            self.ship.body.apply_impulse((speed,0,offset))
         elif self.keys[key.DOWN]:
-            self.ship.body.apply_impulse((0,-speed))
+            self.ship.body.apply_impulse((0,-speed,offset))
         elif self.keys[key.LEFT]:
-            self.ship.body.apply_impulse((-speed,0))
+            self.ship.body.apply_impulse((-speed,0,offset))
 
     def add_borders(self):
         body = pymunk.Body(pymunk.inf, pymunk.inf)
