@@ -71,26 +71,37 @@ class SpaceShip():
     def __init__(self, space):
         mass = 20
         radius = 24
+        self.width = radius * 5
+        self.height = radius
         inertia = pymunk.moment_for_box(mass, 0, radius)
         body = pymunk.Body(mass, inertia)
         x = random.randint(20,600)
         y = random.randint(20,400)
         body.position = x, y
-        shape = PymunkShape.rectangle(body, radius*5, radius)
+        shape = PymunkShape.rectangle(body, self.width, self.height)
         space.add(body, shape)
         self.shape = shape
         self.body = body
+        self.jetoffset = (12, 12)
+        self.jetspeed = 16
     def draw_box(self, box):
         coords = box.get_points()
-        pyglet.gl.glColor4f(1.0, 0.0, 0.0, 0.0)
+        pyglet.gl.glColor4f(1.0, 0.0, 0.0, 0.5)
         PygletDraw.tetragon(coords)
+    def center_of_gravity(self):
+        return Vec2d(self.width / 2.0, self.height / 2.0)
     def draw(self):
         self.draw_box(self.shape)
         pyglet.gl.glColor4f(1.0, 1.0, 0.0, 0.0)
-        vector = self.body.local_to_world((12,12))
-        offset = self.body.local_to_world(self.body.rotation_vector)
-        PygletDraw.line(vector, offset)
-        PygletDraw.point(vector)
+        center = self.body.local_to_world(self.center_of_gravity())
+        offset = self.body.local_to_world(self.jetoffset)
+        rotation_vector = self.body.local_to_world(self.body.rotation_vector)
+        speed = self.body.local_to_world(self.jetoffset + Vec2d(0, self.jetspeed))
+        PygletDraw.line(offset, speed)
+        PygletDraw.point(center)
+        draw_label(center, 'cog')
+        PygletDraw.point(offset)
+        draw_label(offset, 'offset')
 
 
 class Window(pyglet.window.Window):
@@ -105,6 +116,7 @@ class Window(pyglet.window.Window):
             #self.add_asteroid()
         self.lines = self.add_borders()
         self.ship = SpaceShip(self.space)
+        self.widget = Widget(Vec2d(20, 470))
 
     def init_physics(self):
         pymunk.init_pymunk()
@@ -148,16 +160,16 @@ class Window(pyglet.window.Window):
         PygletDraw.tetragon(coords)
 
     def update(self):
-        speed = 1
-        offset = (0, 48)
+        speed = 4
         if self.keys[key.UP]:
-            self.ship.body.apply_impulse(self.ship.body.world_to_local((0, speed)), offset)
+            self.ship.body.apply_impulse((0, self.ship.jetspeed), self.ship.jetoffset)
         elif self.keys[key.RIGHT]:
-            self.ship.body.apply_impulse((speed,0,offset))
+            self.ship.body.apply_impulse((speed,0,self.ship.jetoffset))
         elif self.keys[key.DOWN]:
-            self.ship.body.apply_impulse((0,-speed,offset))
+            self.ship.body.apply_impulse((0,-speed,self.ship.jetoffset))
         elif self.keys[key.LEFT]:
-            self.ship.body.apply_impulse((-speed,0,offset))
+            self.ship.body.apply_impulse((-speed,0,self.ship.jetoffset))
+        self.widget.set_text("angle: %s\n rotation_vector: %s\n position: %s" % (self.ship.body.angle, self.ship.body.rotation_vector, self.ship.body.position))
 
     def add_borders(self):
         body = pymunk.Body(pymunk.inf, pymunk.inf)
@@ -187,6 +199,32 @@ class Window(pyglet.window.Window):
             self.draw_box(asteroid)
         self.draw_lines(self.lines)
         self.ship.draw()
+        self.widget.draw()
+
+class Widget():
+    def __init__(self, position):
+        self.position = position
+        self.text = ''
+        self.label = pyglet.text.Label(self.text,
+              font_name='Monospace',
+              font_size=8,
+              x=self.position.x, y=self.position.y,
+              anchor_x='left', anchor_y='center')
+    def set_text(self, text):
+        self.label.text = text
+    def draw(self):
+        pyglet.gl.glColor4f(0.0,1.0,1.0,0.8)
+        self.label.draw()
+
+def draw_label(position, text):
+    label = pyglet.text.Label(text,
+          font_name='Monospace',
+          font_size=8,
+          x=position.x, y=position.y,
+          anchor_x='left', anchor_y='top')
+    label.draw()
+
+
 
 def to_pyglet(p):
     return Vec2d(round_to_int(p.x), round_to_int(p.y))
