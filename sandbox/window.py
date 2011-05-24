@@ -50,7 +50,6 @@ class Window(pyglet.window.Window):
             self.drawline.set_float_point(Vec2d(x, y))
 
     def update(self):
-        print self.drawline
         pass
     def draw(self):
         if self.drawline != None:
@@ -78,7 +77,7 @@ class DrawLines():
     points = []
     float_point = Vec2d(0,0)
     def __init__(self):
-        pass
+        self.points = []
     def add_point(self, point):
         self.points.append(point)
     def set_float_point(self, point):
@@ -87,10 +86,8 @@ class DrawLines():
         pass
     def draw(self):
         if len(self.points) > 1:
-            print 'points > 1'
             last = self.points[0]
             for n in range(1, len(self.points)):
-                print 'n=%s' % n
                 current = self.points[n]
                 PygletDraw.line(last, current)
                 last = current
