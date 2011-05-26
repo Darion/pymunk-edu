@@ -16,7 +16,7 @@ class Window(pyglet.window.Window):
     def init_physics(self):
         pymunk.init_pymunk()
         self.space = pymunk.Space()
-        self.space.gravity = (0.0, 0.0)
+        self.space.gravity = (0.0, -100.0)
 
     def init_handlers(self):
         self.keys = key.KeyStateHandler()
@@ -38,7 +38,9 @@ class Window(pyglet.window.Window):
             if button == mouse.LEFT:
                 pass
             elif button == mouse.RIGHT:
-                self.objects.append(Polygonal(self.drawline.points))
+                p = Polygonal(self.drawline.points)
+                p.add_to_space(self.space)
+                self.objects.append(p)
                 self.drawline = None
         else:
             self.drawline = DrawLines()
@@ -55,6 +57,7 @@ class Window(pyglet.window.Window):
         if self.drawline != None:
             self.drawline.draw()
         for o in self.objects:
+            o.update()
             o.draw()
 
 class PhysObject():
@@ -66,12 +69,28 @@ class PhysObject():
 class Polygonal(PhysObject):
     def __init__(self, points):
         self.points = points
+        self.body = self._body()
+        self.shape = self._shape(self.body)
+    def _body(self):
+        mass = 20
+        # saint random!
+        radius = 20
+        inertia = pymunk.moment_for_box(mass, 0, radius)
+        body = pymunk.Body(mass, inertia)
+        return body
+    def _shape(self, body):
+        shape = pymunk.Poly(body, self.points)
+        return shape
+    def add_to_space(self, space):
+        space.add(self.shape, self.body)
     def draw(self):
         ns = []
         for point in self.points:
             ns.append(point.x)
             ns.append(point.y)
         pyglet.graphics.draw(len(self.points), pyglet.gl.GL_POLYGON, ('v2f', ns))
+    def update(self):
+        self.points = self.shape.get_points()
 
 class DrawLines():
     points = []
