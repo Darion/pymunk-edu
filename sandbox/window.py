@@ -4,19 +4,35 @@ from pyglet.window import mouse
 import pymunk
 from pymunk import Vec2d
 from draw import PygletDraw
+from random import randint
 
 class Window(pyglet.window.Window):
     objects = []
+    widgets = []
     drawline = None
+    drawmode = 1
+    DRAWMODE_RIGID = 1
+    DRAWMODE_STATIC = 2
     def __init__(self, *args, **kwargs):
         pyglet.window.Window.__init__(self, *args, **kwargs)
         self.init_physics()
         self.init_handlers()
+        self.widgets.append(Widget('rigid'))
+        self.set_drawmode(self.DRAWMODE_RIGID)
+
+    def set_drawmode(self, mode):
+        self.drawmode = mode
+        if mode == self.DRAWMODE_RIGID:
+            self.widgets[0].set_text('rigid')
+        elif mode == self.DRAWMODE_STATIC:
+            self.widgets[0].set_text('static')
+        else:
+            "mode %i not defined" % mode
 
     def init_physics(self):
         pymunk.init_pymunk()
         self.space = pymunk.Space()
-        self.space.gravity = (0.0, -100.0)
+        self.space.gravity = (0.0, -200.0)
 
     def init_handlers(self):
         self.keys = key.KeyStateHandler()
@@ -38,7 +54,10 @@ class Window(pyglet.window.Window):
             if button == mouse.LEFT:
                 pass
             elif button == mouse.RIGHT:
-                p = Polygonal(self.drawline.points)
+                if (self.drawmode == self.DRAWMODE_STATIC):
+                    p = Polygonal(self.drawline.points, True)
+                else:
+                    p = Polygonal(self.drawline.points)
                 p.add_to_space(self.space)
                 self.objects.append(p)
                 self.drawline = None
@@ -46,19 +65,28 @@ class Window(pyglet.window.Window):
             self.drawline = DrawLines()
             self.drawline.add_point(Vec2d(x, y))
 
+    def on_key_press(self, symbol, modifiers):
+        if symbol == key.R:
+            self.set_drawmode(self.DRAWMODE_RIGID)
+        elif symbol == key.S:
+            self.set_drawmode(self.DRAWMODE_STATIC)
+
 
     def on_mouse_motion(self, x, y, dx, dy):
         if self.drawline != None:
             self.drawline.set_float_point(Vec2d(x, y))
 
     def update(self):
-        pass
+        maxg = 900
+        #self.space.gravity = (randint(-maxg,maxg), randint(-maxg,maxg))
     def draw(self):
         if self.drawline != None:
             self.drawline.draw()
         for o in self.objects:
             o.update()
             o.draw()
+        for w in self.widgets:
+            w.draw()
 
 class PhysObject():
     def __init__(self):
@@ -67,22 +95,31 @@ class PhysObject():
         pass
 
 class Polygonal(PhysObject):
-    def __init__(self, points):
+    def __init__(self, points, static=False):
         self.points = points
+        self.static = static
         self.body = self._body()
         self.shape = self._shape(self.body)
     def _body(self):
-        mass = 20
-        # saint random!
-        radius = 20
-        inertia = pymunk.moment_for_box(mass, 0, radius)
-        body = pymunk.Body(mass, inertia)
+        if self.static == False:
+            mass = 20
+            # saint random!
+            radius = 20
+            inertia = pymunk.moment_for_box(mass, 0, radius)
+            body = pymunk.Body(mass, inertia)
+        else:
+            body = pymunk.Body(pymunk.inf, pymunk.inf)
         return body
     def _shape(self, body):
         shape = pymunk.Poly(body, self.points)
         return shape
     def add_to_space(self, space):
-        space.add(self.shape, self.body)
+        if self.static == False:
+            self.body.mass = pymunk.inf
+            self.body.inertia = pymunk.inf
+            space.add(self.shape, self.body)
+        else:
+            space.add_static(self.shape)
     def draw(self):
         ns = []
         for point in self.points:
@@ -112,7 +149,17 @@ class DrawLines():
                 last = current
             PygletDraw.line(last, self.float_point)
 
-
 class Widget():
-    def __init__(self):
-        pass
+    def __init__(self, text='', position=Vec2d(10,10)):
+        self.position = position
+        self.text = text
+        self.label = pyglet.text.Label(self.text,
+              font_name='Monospace',
+              font_size=8,
+              x=self.position.x, y=self.position.y,
+              anchor_x='left', anchor_y='center')
+    def set_text(self, text):
+        self.label.text = text
+    def draw(self):
+        pyglet.gl.glColor4f(0.0,1.0,1.0,0.8)
+        self.label.draw()
