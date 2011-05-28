@@ -32,7 +32,7 @@ class Window(pyglet.window.Window):
     def init_physics(self):
         pymunk.init_pymunk()
         self.space = pymunk.Space()
-        self.space.gravity = (0.0, -200.0)
+        self.space.gravity = (0.0, -50.0)
 
     def init_handlers(self):
         self.keys = key.KeyStateHandler()
@@ -129,7 +129,10 @@ class Polygonal(PhysObject):
         for point in self.points:
             ns.append(point.x)
             ns.append(point.y)
+        pyglet.gl.glColor4f(1.0,1.0,1.0,1.0)
         pyglet.graphics.draw(len(self.points), pyglet.gl.GL_POLYGON, ('v2f', ns))
+        pyglet.gl.glColor4f(1.0,0.0,0.0,1.0)
+        pyglet.graphics.draw(len(self.points), pyglet.gl.GL_POINTS, ('v2f', ns))
     def update(self):
         self.points = self.shape.get_points()
 
