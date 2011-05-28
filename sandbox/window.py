@@ -42,6 +42,10 @@ class Window(pyglet.window.Window):
         while not self.has_exit:
             self.dispatch_events()
             self.clear()
+            pyglet.gl.glBlendFunc(pyglet.gl.GL_SRC_ALPHA, pyglet.gl.GL_ONE_MINUS_SRC_ALPHA)
+            pyglet.gl.glEnable(pyglet.gl.GL_BLEND)
+            pyglet.gl.glEnable(pyglet.gl.GL_LINE_SMOOTH)
+            pyglet.gl.glHint(pyglet.gl.GL_LINE_SMOOTH_HINT, pyglet.gl.GL_DONT_CARE)
             self.update()
             self.space.step(1/50.0)
             self.draw()
