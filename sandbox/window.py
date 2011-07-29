@@ -74,6 +74,8 @@ class Window(pyglet.window.Window):
             self.set_drawmode(self.DRAWMODE_RIGID)
         elif symbol == key.S:
             self.set_drawmode(self.DRAWMODE_STATIC)
+        elif symbol == key.Q:
+            self.close()
 
 
     def on_mouse_motion(self, x, y, dx, dy):
