@@ -17,7 +17,10 @@ class Window(pyglet.window.Window):
         pyglet.window.Window.__init__(self, *args, **kwargs)
         self.init_physics()
         self.init_handlers()
-        self.widgets.append(Widget('rigid'))
+        mode_widget = Widget('rigid', Vec2d(10,25))
+        fps_widget = Widget('null', Vec2d(10, 10))
+        self.widgets.append(mode_widget)
+        self.widgets.append(fps_widget)
         self.set_drawmode(self.DRAWMODE_RIGID)
 
     def set_drawmode(self, mode):
@@ -49,6 +52,7 @@ class Window(pyglet.window.Window):
             self.update()
             self.space.step(1/50.0)
             self.draw()
+            self.widgets[1].set_text("fps: %f" % pyglet.clock.get_fps())
             pyglet.clock.tick()
             self.flip()
 
