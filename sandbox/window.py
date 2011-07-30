@@ -4,7 +4,7 @@ from pyglet.window import mouse
 import pymunk
 from pymunk import Vec2d
 from draw import PygletDraw
-from random import randint
+from cli import *
 
 class Window(pyglet.window.Window):
     objects = []
@@ -92,6 +92,10 @@ class Window(pyglet.window.Window):
         if self.input_active:
             if ord(symbol) == 13:
                 # if symbol - "enter key"
+                command = Parser.parse(self.input_text)
+                if command['type'] == 'set':
+                    if command['params'][0] == 'gravity':
+                        self.space.gravity = (0, -1 * float(command['params'][1]))
                 self.input_finish()
             else:
                 if self.input_symbol_printable(symbol):
