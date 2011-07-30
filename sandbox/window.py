@@ -87,8 +87,6 @@ class Window(pyglet.window.Window):
                 self.set_drawmode(self.DRAWMODE_STATIC)
             elif symbol == key.Q:
                 self.close()
-           # elif symbol == key.COLON:
-           #     self.input_start()
 
     def on_text(self, symbol):
         if self.input_active:
@@ -114,7 +112,6 @@ class Window(pyglet.window.Window):
 
     def update(self):
         maxg = 900
-        #self.space.gravity = (randint(-maxg,maxg), randint(-maxg,maxg))
     def draw(self):
         if self.drawline != None:
             self.drawline.draw()
@@ -138,10 +135,8 @@ class Window(pyglet.window.Window):
         self.input_update_widget()
 
     def input_backspace(self):
-        print "before bs: %s" % self.input_text
         self.input_text = self.input_text[:-1]
         self.input_update_widget()
-        print "after bs: %s" % self.input_text
 
     def input_symbol_printable(self, symbol):
         return True
