@@ -102,7 +102,6 @@ class Window(pyglet.window.Window):
             if symbol == ':':
                 self.input_start()
 
-
     def on_text_motion(self, symbol):
         if self.input_active:
             if symbol == key.MOTION_BACKSPACE:
@@ -130,6 +129,7 @@ class Window(pyglet.window.Window):
         self.input_update_widget()
 
     def input_finish(self):
+        self.input_text = ''
         self.widgets[2].set_text('')
         self.input_active = False
 
