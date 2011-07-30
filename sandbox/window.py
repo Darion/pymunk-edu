@@ -19,9 +19,13 @@ class Window(pyglet.window.Window):
         self.init_handlers()
         mode_widget = Widget('rigid', Vec2d(10,25))
         fps_widget = Widget('null', Vec2d(10, 10))
+        command_widget = Widget('', Vec2d(10, 40))
         self.widgets.append(mode_widget)
         self.widgets.append(fps_widget)
+        self.widgets.append(command_widget)
         self.set_drawmode(self.DRAWMODE_RIGID)
+        self.input_active = False
+        self.input_text = ''
 
     def set_drawmode(self, mode):
         self.drawmode = mode
@@ -74,12 +78,35 @@ class Window(pyglet.window.Window):
             self.drawline.add_point(Vec2d(x, y))
 
     def on_key_press(self, symbol, modifiers):
-        if symbol == key.R:
-            self.set_drawmode(self.DRAWMODE_RIGID)
-        elif symbol == key.S:
-            self.set_drawmode(self.DRAWMODE_STATIC)
-        elif symbol == key.Q:
-            self.close()
+        if self.input_active:
+            pass
+        else:
+            if symbol == key.R:
+                self.set_drawmode(self.DRAWMODE_RIGID)
+            elif symbol == key.S:
+                self.set_drawmode(self.DRAWMODE_STATIC)
+            elif symbol == key.Q:
+                self.close()
+           # elif symbol == key.COLON:
+           #     self.input_start()
+
+    def on_text(self, symbol):
+        if self.input_active:
+            if ord(symbol) == 13:
+                # if symbol - "enter key"
+                self.input_finish()
+            else:
+                if self.input_symbol_printable(symbol):
+                    self.input_add_symbol(symbol)
+        else:
+            if symbol == ':':
+                self.input_start()
+
+
+    def on_text_motion(self, symbol):
+        if self.input_active:
+            if symbol == key.MOTION_BACKSPACE:
+                self.input_backspace()
 
 
     def on_mouse_motion(self, x, y, dx, dy):
@@ -97,6 +124,30 @@ class Window(pyglet.window.Window):
             o.draw()
         for w in self.widgets:
             w.draw()
+
+    def input_start(self):
+        self.input_active = True
+        self.input_update_widget()
+
+    def input_finish(self):
+        self.widgets[2].set_text('')
+        self.input_active = False
+
+    def input_add_symbol(self, symbol):
+        self.input_text += symbol
+        self.input_update_widget()
+
+    def input_backspace(self):
+        print "before bs: %s" % self.input_text
+        self.input_text = self.input_text[:-1]
+        self.input_update_widget()
+        print "after bs: %s" % self.input_text
+
+    def input_symbol_printable(self, symbol):
+        return True
+
+    def input_update_widget(self):
+        self.widgets[2].set_text(':'+self.input_text)
 
 class PhysObject():
     def __init__(self):
