@@ -14,12 +14,15 @@ class Window(pyglet.window.Window):
     DRAWMODE_RIGID = 1
     DRAWMODE_STATIC = 2
     def __init__(self, *args, **kwargs):
+        self.log = Log()
         pyglet.window.Window.__init__(self, *args, **kwargs)
         self.init_physics()
         self.init_handlers()
+        self.log.add('init widgets')
         self.append_widget('mode', Widget('rigid', Vec2d(10,25)))
         self.append_widget('fps', Widget('null', Vec2d(10, 10)))
         self.append_widget('command', Widget('', Vec2d(10, 40)))
+        self.append_widget('log', MlWidget('log', Vec2d(200, 10), 300))
         self.set_drawmode(self.DRAWMODE_RIGID)
         self.input_active = False
         self.input_text = ''
@@ -61,6 +64,7 @@ class Window(pyglet.window.Window):
                 self.step_on = False
             self.draw()
             self.widgets['fps'].set_text("fps: %f" % pyglet.clock.get_fps())
+            self.widgets['log'].set_text(self.log.tail(8))
             pyglet.clock.tick()
             self.flip()
 
@@ -110,6 +114,7 @@ class Window(pyglet.window.Window):
                 if command['type'] == 'set':
                     if command['params'][0] == 'gravity':
                         self.space.gravity = (0, -1 * float(command['params'][1]))
+                        self.log.add('set gravity=%s' % command['params'][1])
                 self.input_finish()
             else:
                 if self.input_symbol_printable(symbol):
@@ -240,3 +245,27 @@ class Widget():
     def draw(self):
         pyglet.gl.glColor4f(0.0,1.0,1.0,0.8)
         self.label.draw()
+
+class MlWidget(Widget):
+    def __init__(self, text='', position=Vec2d(10,10), width = 100):
+        self.position = position
+        self.text = text
+        self.label = pyglet.text.Label(self.text,
+              font_name='Monospace',
+              font_size=8,
+              x=self.position.x, y=self.position.y,
+              anchor_x='left', anchor_y='bottom',
+              width=width,
+              multiline=True,
+              )
+
+class Log():
+    TYPE_INFO = 0
+    TYPE_WARNING = 1
+    TYPE_ERROR = 2
+    log = []
+    def add(self, text, message_type=0):
+        self.log.append([text, message_type])
+    def tail(self, num):
+        tail = self.log[-num:]
+        return "\n".join([ line[0] for line in tail ])
