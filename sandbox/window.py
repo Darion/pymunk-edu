@@ -200,8 +200,6 @@ class Polygonal(PhysObject):
         return shape
     def add_to_space(self, space):
         if self.static == False:
-            self.body.mass = pymunk.inf
-            self.body.inertia = pymunk.inf
             space.add(self.shape, self.body)
         else:
             space.add_static(self.shape)
