@@ -8,7 +8,7 @@ from cli import *
 
 class Window(pyglet.window.Window):
     objects = []
-    widgets = []
+    widgets = {}
     drawline = None
     drawmode = 1
     DRAWMODE_RIGID = 1
@@ -17,24 +17,24 @@ class Window(pyglet.window.Window):
         pyglet.window.Window.__init__(self, *args, **kwargs)
         self.init_physics()
         self.init_handlers()
-        mode_widget = Widget('rigid', Vec2d(10,25))
-        fps_widget = Widget('null', Vec2d(10, 10))
-        command_widget = Widget('', Vec2d(10, 40))
-        self.widgets.append(mode_widget)
-        self.widgets.append(fps_widget)
-        self.widgets.append(command_widget)
+        self.append_widget('mode', Widget('rigid', Vec2d(10,25)))
+        self.append_widget('fps', Widget('null', Vec2d(10, 10)))
+        self.append_widget('command', Widget('', Vec2d(10, 40)))
         self.set_drawmode(self.DRAWMODE_RIGID)
         self.input_active = False
         self.input_text = ''
         self.paused = True
         self.step_on = False
 
+    def append_widget(self, name, widget):
+        self.widgets[name] = widget
+
     def set_drawmode(self, mode):
         self.drawmode = mode
         if mode == self.DRAWMODE_RIGID:
-            self.widgets[0].set_text('rigid')
+            self.widgets['mode'].set_text('rigid')
         elif mode == self.DRAWMODE_STATIC:
-            self.widgets[0].set_text('static')
+            self.widgets['mode'].set_text('static')
         else:
             "mode %i not defined" % mode
 
@@ -60,7 +60,7 @@ class Window(pyglet.window.Window):
                 self.space.step(1/50.0)
                 self.step_on = False
             self.draw()
-            self.widgets[1].set_text("fps: %f" % pyglet.clock.get_fps())
+            self.widgets['fps'].set_text("fps: %f" % pyglet.clock.get_fps())
             pyglet.clock.tick()
             self.flip()
 
@@ -137,7 +137,7 @@ class Window(pyglet.window.Window):
             o.update()
             o.draw()
         for w in self.widgets:
-            w.draw()
+            self.widgets[w].draw()
 
     def input_start(self):
         self.input_active = True
@@ -145,7 +145,7 @@ class Window(pyglet.window.Window):
 
     def input_finish(self):
         self.input_text = ''
-        self.widgets[2].set_text('')
+        self.widgets['command'].set_text('')
         self.input_active = False
 
     def input_add_symbol(self, symbol):
@@ -160,7 +160,7 @@ class Window(pyglet.window.Window):
         return True
 
     def input_update_widget(self):
-        self.widgets[2].set_text(':'+self.input_text)
+        self.widgets['command'].set_text(':'+self.input_text)
 
 class PhysObject():
     def __init__(self):
