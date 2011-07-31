@@ -27,6 +27,7 @@ class Window(pyglet.window.Window):
         self.input_active = False
         self.input_text = ''
         self.paused = True
+        self.step_on = False
 
     def set_drawmode(self, mode):
         self.drawmode = mode
@@ -55,8 +56,9 @@ class Window(pyglet.window.Window):
             pyglet.gl.glEnable(pyglet.gl.GL_LINE_SMOOTH)
             pyglet.gl.glHint(pyglet.gl.GL_LINE_SMOOTH_HINT, pyglet.gl.GL_DONT_CARE)
             self.update()
-            if self.paused != False:
+            if self.paused != False or self.step_on:
                 self.space.step(1/50.0)
+                self.step_on = False
             self.draw()
             self.widgets[1].set_text("fps: %f" % pyglet.clock.get_fps())
             pyglet.clock.tick()
@@ -97,6 +99,8 @@ class Window(pyglet.window.Window):
                 self.close()
             elif symbol == key.P:
                 self.pause()
+            elif symbol == key.T:
+                self.step_on = True
 
     def on_text(self, symbol):
         if self.input_active:
