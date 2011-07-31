@@ -28,6 +28,8 @@ class Window(pyglet.window.Window):
         self.input_text = ''
         self.paused = True
         self.step_on = False
+        # float!
+        self.step_divisor = 50.0
 
     def append_widget(self, name, widget):
         self.widgets[name] = widget
@@ -60,7 +62,7 @@ class Window(pyglet.window.Window):
             pyglet.gl.glHint(pyglet.gl.GL_LINE_SMOOTH_HINT, pyglet.gl.GL_DONT_CARE)
             self.update()
             if self.paused != False or self.step_on:
-                self.space.step(1/50.0)
+                self.space.step(1 / self.step_divisor)
                 self.step_on = False
             self.draw()
             self.widgets['fps'].set_text("fps: %f" % pyglet.clock.get_fps())
@@ -115,6 +117,9 @@ class Window(pyglet.window.Window):
                     if command['params'][0] == 'gravity':
                         self.space.gravity = (0, -1 * float(command['params'][1]))
                         self.log.add('set gravity=%s' % command['params'][1])
+                    elif command['params'][0] == 'step_divisor':
+                        self.step_divisor = float(command['params'][1])
+                        self.log.add('set step_divisor=%s' % command['params'][1])
                 self.input_finish()
             else:
                 if self.input_symbol_printable(symbol):
@@ -184,7 +189,8 @@ class Polygonal(PhysObject):
             mass = 20
             # saint random!
             radius = 20
-            inertia = pymunk.moment_for_box(mass, 0, radius)
+            #inertia = pymunk.moment_for_box(mass, 0, radius)
+            inertia = pymunk.moment_for_poly(mass, self.points)
             body = pymunk.Body(mass, inertia)
         else:
             body = pymunk.Body(pymunk.inf, pymunk.inf)
