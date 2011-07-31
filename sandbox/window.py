@@ -26,6 +26,7 @@ class Window(pyglet.window.Window):
         self.set_drawmode(self.DRAWMODE_RIGID)
         self.input_active = False
         self.input_text = ''
+        self.paused = True
 
     def set_drawmode(self, mode):
         self.drawmode = mode
@@ -54,11 +55,18 @@ class Window(pyglet.window.Window):
             pyglet.gl.glEnable(pyglet.gl.GL_LINE_SMOOTH)
             pyglet.gl.glHint(pyglet.gl.GL_LINE_SMOOTH_HINT, pyglet.gl.GL_DONT_CARE)
             self.update()
-            self.space.step(1/50.0)
+            if self.paused != False:
+                self.space.step(1/50.0)
             self.draw()
             self.widgets[1].set_text("fps: %f" % pyglet.clock.get_fps())
             pyglet.clock.tick()
             self.flip()
+
+    def pause(self):
+        if self.paused:
+            self.paused = False
+        else:
+            self.paused = True
 
     def on_mouse_press(self, x, y, button, modifiers):
         if self.drawline != None:
@@ -87,6 +95,8 @@ class Window(pyglet.window.Window):
                 self.set_drawmode(self.DRAWMODE_STATIC)
             elif symbol == key.Q:
                 self.close()
+            elif symbol == key.P:
+                self.pause()
 
     def on_text(self, symbol):
         if self.input_active:
