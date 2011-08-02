@@ -1,81 +1,53 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset='utf-8'>
-
-  <title>Darion/pymunk-edu @ GitHub</title>
-
-  <style type="text/css">
-    body {
-      margin-top: 1.0em;
-      background-color: #161616;
-      font-family: Helvetica, Arial, FreeSans, san-serif;
-      color: #ffffff;
-    }
-    #container {
-      margin: 0 auto;
-      width: 700px;
-    }
-    h1 { font-size: 3.8em; color: #ad55fe; margin-bottom: 3px; }
-    h1 .small { font-size: 0.4em; }
-    h1 a { text-decoration: none }
-    h2 { font-size: 1.5em; color: #ad55fe; }
-    h3 { text-align: center; color: #ad55fe; }
-    a { color: #ad55fe; }
-    .description { font-size: 1.2em; margin-bottom: 30px; margin-top: 30px; font-style: italic;}
-    .download { float: right; }
-    pre { background: #000; color: #fff; padding: 15px;}
-    hr { border: 0; width: 80%; border-bottom: 1px solid #aaa}
-    .footer { text-align:center; padding-top:30px; font-style: italic; }
-  </style>
-</head>
-
-<body>
-  <a href="http://github.com/Darion/pymunk-edu"><img style="position: absolute; top: 0; right: 0; border: 0;" src="http://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub" /></a>
-
-  <div id="container">
-
-    <div class="download">
-      <a href="http://github.com/Darion/pymunk-edu/zipball/master">
-        <img border="0" width="90" src="http://github.com/images/modules/download/zip.png"></a>
-      <a href="http://github.com/Darion/pymunk-edu/tarball/master">
-        <img border="0" width="90" src="http://github.com/images/modules/download/tar.png"></a>
+---
+layout: default
+title: pymunk-edu @ github
+---
+<!--
+<p>
+    Итак, преодолев стеcнение, я создал публичный клон репозитория для своих ковыряний в pymunk.
+    Здесь будут логи "разработки" для структурирования процесса изучения и экспериментирования.
+</p>
+<p>
+    По сути, скорее всего это никому кроме меня не будет нужно. Но раз github создает удобные
+    инструменты для работы с проектом, почему бы ими не воспользоваться.
+</p>
+<p>
+    Логов пока нет, я не разобрался в том, как их удобнее всего будет вести. Но скоро будут.
+</p>
+<h2>Download</h2>
+<p>
+  Если это вам зачем-то понадобилось, вы можете скачать исходники в форматах
+  <a href="http://github.com/Darion/pymunk-edu/zipball/master">zip</a> или
+  <a href="http://github.com/Darion/pymunk-edu/tarball/master">tar</a>.
+</p>
+<p>А также клонировать проект через <a href="http://git-scm.com">Git</a>
+  командой:
+  <pre>$ git clone git://github.com/Darion/pymunk-edu</pre>
+  и всласть посмеяться. Ну или поругаться на "криворуких python-программистов".
+</p>
+-->
+{% for post in paginator.posts %}
+<div class="post">
+    <h2><a href="{{ post.url }}">{{ post.title }}</a></h2>
+    <div class="content">
+        {{ post.content }}
     </div>
-
-    <h1><a href="http://github.com/Darion/pymunk-edu">pymunk-edu</a>
-      <span class="small">by <a href="http://github.com/Darion">Darion</a></span></h1>
-
-    <div class="description">
-        Лог изучения pymunk через разработку
+</div>
+{% endfor %}
+<!-- Pagination links -->
+{% if paginator.previous_page or paginator.next_page %}
+    <div class="pagination">
+    {% if paginator.previous_page > 1 %}
+        <a href="/page{{paginator.previous_page}}" class="previous">Previous</a>
+    {% else if paginator.previous_page == 1  %}
+        <a href="/" class="previous">Previous</a>
+        <span class="previous">Previous</span>
+    {% endif %}
+    <span class="page_number ">Page: {{paginator.page}} of {{paginator.total_pages}}</span>
+    {% if paginator.next_page %}
+        <a href="/page{{paginator.next_page}}" class="next ">Next</a>
+    {% else %}
+        <span class="next ">Next</span>
+    {% endif %}
     </div>
-    <p>
-        Итак, преодолев стеcнение, я создал публичный клон репозитория для своих ковыряний в pymunk.
-        Здесь будут логи "разработки" для структурирования процесса изучения и экспериментирования.
-    </p>
-    <p>
-        По сути, скорее всего это никому кроме меня не будет нужно. Но раз github создает удобные
-        инструменты для работы с проектом, почему бы ими не воспользоваться.
-    </p>
-    <p>
-        Логов пока нет, я не разобрался в том, как их удобнее всего будет вести. Но скоро будут.
-    </p>
-    <h2>Download</h2>
-    <p>
-      Если это вам зачем-то понадобилось, вы можете скачать исходники в форматах
-      <a href="http://github.com/Darion/pymunk-edu/zipball/master">zip</a> или
-      <a href="http://github.com/Darion/pymunk-edu/tarball/master">tar</a>.
-    </p>
-    <p>А также клонировать проект через <a href="http://git-scm.com">Git</a>
-      командой:
-      <pre>$ git clone git://github.com/Darion/pymunk-edu</pre>
-      и всласть посмеяться. Ну или поругаться на "криворуких python-программистов".
-    </p>
-    <div class="footer">
-      Страничка самого проекта на гитхабе : <a href="http://github.com/Darion/pymunk-edu">Darion/pymunk-edu</a>
-    </div>
-
-  </div>
-
-  
-</body>
-</html>
+{% endif %}

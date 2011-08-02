@@ -1,0 +1,3 @@
+auto: true
+paginate: 2
+markdown: rdiscount
