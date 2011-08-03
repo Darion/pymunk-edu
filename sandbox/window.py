@@ -4,6 +4,9 @@ from pyglet.window import mouse
 import pymunk
 from pymunk import Vec2d
 from draw import PygletDraw
+from widget import *
+from physobject import *
+from utils import *
 from cli import *
 
 class Window(pyglet.window.Window):
@@ -184,66 +187,6 @@ class Window(pyglet.window.Window):
     def input_update_widget(self):
         self.widgets['command'].set_text(':'+self.input_text)
 
-class PhysObject():
-    def __init__(self):
-        pass
-    def draw(self):
-        pass
-    def debug_info(self):
-        info = ''
-        info += 'velocity: %s\n' % self.body.velocity
-        info += 'angle: %s\n' % self.body.angle
-        info += 'angular_velocity: %s\n' % self.body.angular_velocity
-        info += 'mass: %s\n' % self.body.mass
-        info += 'moment: %s\n' % self.body.moment
-        info += 'rotation_vector: %s\n' % self.body.rotation_vector
-        return info
-
-class Polygonal(PhysObject):
-    def __init__(self, points, static=False):
-        self.points = points
-        self.static = static
-        self.body = self._body()
-        self.shape = self._shape(self.body)
-    def _body(self):
-        if self.static == False:
-            mass = 20
-            # saint random!
-            radius = 20
-            #inertia = pymunk.moment_for_box(mass, 0, radius)
-            inertia = pymunk.moment_for_poly(mass, self.points)
-            body = pymunk.Body(mass, inertia)
-        else:
-            body = pymunk.Body(pymunk.inf, pymunk.inf)
-        return body
-    def _shape(self, body):
-        shape = pymunk.Poly(body, self.points)
-        return shape
-    def add_to_space(self, space):
-        if self.static == False:
-            space.add(self.shape, self.body)
-        else:
-            space.add_static(self.shape)
-    def draw(self):
-        ns = []
-        for point in self.points:
-            ns.append(point.x)
-            ns.append(point.y)
-        pyglet.gl.glColor4f(0.7,0.7,0.7,1.0)
-        pyglet.graphics.draw(len(self.points), pyglet.gl.GL_POLYGON, ('v2f', ns))
-        pyglet.gl.glColor4f(1.0,0.0,0.0,1.0)
-        pyglet.graphics.draw(len(self.points), pyglet.gl.GL_POINTS, ('v2f', ns))
-    def draw_label(self, text):
-        label = pyglet.text.Label(text,
-              font_name='Monospace',
-              font_size=8,
-              x=self.points[0].x, y=self.points[0].y,
-              anchor_x='left', anchor_y='center',
-              color=(0,255,0,200))
-        label.draw()
-    def update(self):
-        self.points = self.shape.get_points()
-
 class DrawLines():
     points = []
     float_point = Vec2d(0,0)
@@ -263,42 +206,3 @@ class DrawLines():
                 PygletDraw.line(last, current)
                 last = current
             PygletDraw.line(last, self.float_point)
-
-class Widget():
-    def __init__(self, text='', position=Vec2d(10,10)):
-        self.position = position
-        self.text = text
-        self.label = pyglet.text.Label(self.text,
-              font_name='Monospace',
-              font_size=8,
-              x=self.position.x, y=self.position.y,
-              anchor_x='left', anchor_y='center')
-    def set_text(self, text):
-        self.label.text = text
-    def draw(self):
-        pyglet.gl.glColor4f(0.0,1.0,1.0,0.8)
-        self.label.draw()
-
-class MlWidget(Widget):
-    def __init__(self, text='', position=Vec2d(10,10), width = 100):
-        self.position = position
-        self.text = text
-        self.label = pyglet.text.Label(self.text,
-              font_name='Monospace',
-              font_size=8,
-              x=self.position.x, y=self.position.y,
-              anchor_x='left', anchor_y='bottom',
-              width=width,
-              multiline=True,
-              )
-
-class Log():
-    TYPE_INFO = 0
-    TYPE_WARNING = 1
-    TYPE_ERROR = 2
-    log = []
-    def add(self, text, message_type=0):
-        self.log.append([text, message_type])
-    def tail(self, num):
-        tail = self.log[-num:]
-        return "\n".join([ line[0] for line in tail ])
