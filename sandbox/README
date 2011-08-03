@@ -1,0 +1,26 @@
+Keybindings
+-----------
+
+s - static mode
+
+r - rigid mode
+
+p - pause
+
+t - one step
+
+: - command line
+
+Enter - execute command
+
+q - quit
+
+Commands
+--------
+
+set gravity=100
+
+set active_object=0
+
+set step_divisor=50
+
