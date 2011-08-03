@@ -22,12 +22,16 @@ class Window(pyglet.window.Window):
         self.append_widget('mode', Widget('rigid', Vec2d(10,25)))
         self.append_widget('fps', Widget('null', Vec2d(10, 10)))
         self.append_widget('command', Widget('', Vec2d(10, 40)))
-        self.append_widget('log', MlWidget('log', Vec2d(200, 10), 300))
+        self.append_widget('log', MlWidget('log', Vec2d(200, 10), 400))
+        self.append_widget('object_info', MlWidget('', Vec2d(350, 450), 400))
+        self.widgets['object_info'].label.anchor_y = 'top'
+        self.widgets['object_info'].label.color = (0, 0, 128, 200)
         self.set_drawmode(self.DRAWMODE_RIGID)
         self.input_active = False
         self.input_text = ''
         self.paused = True
         self.step_on = False
+        self.active_object = None
         # float!
         self.step_divisor = 50.0
 
@@ -67,6 +71,8 @@ class Window(pyglet.window.Window):
             self.draw()
             self.widgets['fps'].set_text("fps: %f" % pyglet.clock.get_fps())
             self.widgets['log'].set_text(self.log.tail(8))
+            if self.active_object != None:
+                self.widgets['object_info'].set_text(self.objects[self.active_object].debug_info())
             pyglet.clock.tick()
             self.flip()
 
@@ -120,6 +126,9 @@ class Window(pyglet.window.Window):
                     elif command['params'][0] == 'step_divisor':
                         self.step_divisor = float(command['params'][1])
                         self.log.add('set step_divisor=%s' % command['params'][1])
+                    elif command['params'][0] == 'active_object':
+                        self.active_object = int(command['params'][1])
+                        self.log.add('set active_object=%s' % command['params'][1])
                 self.input_finish()
             else:
                 if self.input_symbol_printable(symbol):
@@ -140,12 +149,15 @@ class Window(pyglet.window.Window):
 
     def update(self):
         maxg = 900
+
     def draw(self):
         if self.drawline != None:
             self.drawline.draw()
-        for o in self.objects:
+        for i in range(0, len(self.objects)):
+            o = self.objects[i]
             o.update()
             o.draw()
+            o.draw_label(str(i))
         for w in self.widgets:
             self.widgets[w].draw()
 
@@ -177,6 +189,15 @@ class PhysObject():
         pass
     def draw(self):
         pass
+    def debug_info(self):
+        info = ''
+        info += 'velocity: %s\n' % self.body.velocity
+        info += 'angle: %s\n' % self.body.angle
+        info += 'angular_velocity: %s\n' % self.body.angular_velocity
+        info += 'mass: %s\n' % self.body.mass
+        info += 'moment: %s\n' % self.body.moment
+        info += 'rotation_vector: %s\n' % self.body.rotation_vector
+        return info
 
 class Polygonal(PhysObject):
     def __init__(self, points, static=False):
@@ -208,10 +229,18 @@ class Polygonal(PhysObject):
         for point in self.points:
             ns.append(point.x)
             ns.append(point.y)
-        pyglet.gl.glColor4f(1.0,1.0,1.0,1.0)
+        pyglet.gl.glColor4f(0.7,0.7,0.7,1.0)
         pyglet.graphics.draw(len(self.points), pyglet.gl.GL_POLYGON, ('v2f', ns))
         pyglet.gl.glColor4f(1.0,0.0,0.0,1.0)
         pyglet.graphics.draw(len(self.points), pyglet.gl.GL_POINTS, ('v2f', ns))
+    def draw_label(self, text):
+        label = pyglet.text.Label(text,
+              font_name='Monospace',
+              font_size=8,
+              x=self.points[0].x, y=self.points[0].y,
+              anchor_x='left', anchor_y='center',
+              color=(0,255,0,200))
+        label.draw()
     def update(self):
         self.points = self.shape.get_points()
 
