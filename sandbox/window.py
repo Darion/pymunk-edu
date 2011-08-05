@@ -1,3 +1,4 @@
+# -*- encoding: utf-8 -*-
 import pyglet
 from pyglet.window import key
 from pyglet.window import mouse
@@ -16,6 +17,7 @@ class Window(pyglet.window.Window):
     drawmode = 1
     DRAWMODE_RIGID = 1
     DRAWMODE_STATIC = 2
+    fig = 'polygon'
     def __init__(self, *args, **kwargs):
         self.log = Log()
         pyglet.window.Window.__init__(self, *args, **kwargs)
@@ -23,6 +25,7 @@ class Window(pyglet.window.Window):
         self.init_handlers()
         self.log.add('init widgets')
         self.append_widget('mode', Widget('rigid', Vec2d(10,25)))
+        self.append_widget('fig', Widget('', Vec2d(10,40)))
         self.append_widget('fps', Widget('null', Vec2d(10, 10)))
         self.append_widget('command', Widget('', Vec2d(10, 40)))
         self.append_widget('log', MlWidget('log', Vec2d(200, 10), 400))
@@ -73,6 +76,7 @@ class Window(pyglet.window.Window):
                 self.step_on = False
             self.draw()
             self.widgets['fps'].set_text("fps: %f" % pyglet.clock.get_fps())
+            self.widgets['fig'].set_text(self.fig)
             self.widgets['log'].set_text(self.log.tail(8))
             if self.active_object != None:
                 self.widgets['object_info'].set_text(self.objects[self.active_object].debug_info())
@@ -89,17 +93,19 @@ class Window(pyglet.window.Window):
         if self.drawline != None:
             self.drawline.add_point(Vec2d(x, y))
             if button == mouse.LEFT:
-                pass
+                if self.drawline.finished:
+                    p = self.drawline.finish()
             elif button == mouse.RIGHT:
-                if (self.drawmode == self.DRAWMODE_STATIC):
-                    p = Polygonal(self.drawline.points, True)
-                else:
-                    p = Polygonal(self.drawline.points)
+                p = self.drawline.finish()
+            if (self.drawmode == self.DRAWMODE_STATIC):
+                p.static = True
+            if self.drawline.finished:
                 p.add_to_space(self.space)
                 self.objects.append(p)
                 self.drawline = None
         else:
-            self.drawline = DrawLines()
+            #self.drawline = DrawLines('polygon')
+            self.drawline = DrawLines(self.fig)
             self.drawline.add_point(Vec2d(x, y))
 
     def on_key_press(self, symbol, modifiers):
@@ -116,6 +122,10 @@ class Window(pyglet.window.Window):
                 self.pause()
             elif symbol == key.T:
                 self.step_on = True
+            elif symbol == key.L:
+                self.fig = 'polygon'
+            elif symbol == key.G:
+                self.fig = 'segment'
 
     def on_text(self, symbol):
         if self.input_active:
@@ -187,17 +197,30 @@ class Window(pyglet.window.Window):
     def input_update_widget(self):
         self.widgets['command'].set_text(':'+self.input_text)
 
+# Класс, реализующий процесс "рисования" многоугольника
 class DrawLines():
     points = []
     float_point = Vec2d(0,0)
-    def __init__(self):
+    finished = False
+    def __init__(self, fig):
+        self.fig = fig
+        if self.fig == 'polygon':
+            self.points_amount = 0
+        else:
+            self.points_amount = 2
         self.points = []
     def add_point(self, point):
         self.points.append(point)
+        if len(self.points) == self.points_amount:
+            self.finished = True
     def set_float_point(self, point):
         self.float_point = point
     def finish(self):
-        pass
+        self.finished = True
+        if self.fig == 'polygon':
+            return Polygonal(self.points)
+        elif self.fig == 'segment':
+            return Segment(self.points[0], self.points[1], static=True)
     def draw(self):
         if len(self.points) > 1:
             last = self.points[0]
